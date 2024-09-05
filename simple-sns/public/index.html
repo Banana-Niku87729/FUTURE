@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUTURE - HOME</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background-color: #f0f0f0;
+        }
+        #container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, textarea, button {
+            display: block;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>書き込む</h1>
+        <label for="username">名前:</label>
+        <input type="text" id="username" placeholder="あなたの名前">
+
+        <label for="content">投稿内容:</label>
+        <textarea id="content" placeholder="あなたの投稿内容" rows="4" cols="50"></textarea>
+
+        <button onclick="submitPost()">投稿</button>
+
+        <div id="posts"></div>
+    </div>
+
+    <script>
+        async function submitPost() {
+            const username = document.getElementById('username').value;
+            const content = document.getElementById('content').value;
+
+            if (username && content) {
+                try {
+                    const response = await fetch('/submit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, content })
+                    });
+
+                    if (response.ok) {
+                        alert('投稿が保存されました');
+                        document.getElementById('username').value = '';
+                        document.getElementById('content').value = '';
+                        loadPosts();  // 投稿後に内容を再読み込み
+                    } else {
+                        alert('投稿の保存に失敗しました');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('投稿の保存中にエラーが発生しました');
+                }
+            } else {
+                alert('名前と投稿内容を入力してください。');
+            }
+        }
+
+        async function loadPosts() {
+            try {
+                const response = await fetch('/posts');
+                const posts = await response.text();
+                document.getElementById('posts').innerText = posts;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // ページロード時に投稿内容を読み込む
+        window.onload = loadPosts;
+    </script>
+</body>
+</html>
